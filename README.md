@@ -1,2 +1,2 @@
 # merlin :bird:
-A lightweight service that provides price alerts for stocks, crypto, and fiat currencies.
+A service that provides price alerts for stocks, crypto, and fiat currencies.
