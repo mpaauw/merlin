@@ -8,6 +8,7 @@ public class MerlinApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MerlinApplication.class, args);
+
 	}
 
 }

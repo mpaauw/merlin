@@ -3,9 +3,9 @@ package org.mpaauw.merlin.query;
 import org.mpaauw.merlin.common.pojo.Coin;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public interface QueryService {
-    String GetLastTradePrice(String symbol) throws IOException;
-    Map<String, Coin> GetAllCoins();
+    String getLastTradePrice(String symbol) throws IOException;
+    List<Coin> getAllCoins();
 }

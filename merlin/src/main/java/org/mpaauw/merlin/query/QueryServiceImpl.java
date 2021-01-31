@@ -1,6 +1,7 @@
 package org.mpaauw.merlin.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mpaauw.merlin.common.cache.CoinCache;
 import org.mpaauw.merlin.common.pojo.Coin;
 import org.mpaauw.merlin.common.pojo.Coins;
 import org.mpaauw.merlin.common.util.Stopwatch;
@@ -8,8 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class QueryServiceImpl implements QueryService{
 
@@ -18,11 +19,16 @@ public class QueryServiceImpl implements QueryService{
 
     private RestTemplate restTemplate = new RestTemplate();
     private ObjectMapper objectMapper = new ObjectMapper();
-    private Map<String, Coin> coinCache = new HashMap<>();
-    private Stopwatch stopwatch = new Stopwatch();
+    private CoinCache coinCache;
+
+    public QueryServiceImpl() {
+        this.coinCache = new CoinCache();
+        this.coinCache.fillCache(this.getAllCoins());
+    }
 
     @Override
-    public String GetLastTradePrice(String symbol) {
+    public String getLastTradePrice(String symbol) {
+        Stopwatch stopwatch = new Stopwatch();
         Coin coin = null;
         try {
             stopwatch.start();
@@ -37,13 +43,14 @@ public class QueryServiceImpl implements QueryService{
         }
         stopwatch.stop();
         System.out.println(String.format("[GetLastTradePrice] Total time elapsed: %sms", stopwatch.getElapsedTimeMs()));
-        stopwatch.reset();
         return (coin != null) ? coin.getPriceUsd() : "No price found! Coin is null.";
     }
 
     // TODO: paginate asynchronously
     @Override
-    public Map<String, Coin> GetAllCoins() {
+    public List<Coin> getAllCoins() {
+        Stopwatch stopwatch = new Stopwatch();
+        List<Coin> allCoins = new ArrayList();
         try {
             int totalNumberOfCoins = 100;
             stopwatch.start();
@@ -54,7 +61,7 @@ public class QueryServiceImpl implements QueryService{
                 if(response.getStatusCode().is2xxSuccessful()) {
                     Coins coins = objectMapper.readValue(response.getBody(), Coins.class);
                     for(Coin coin : coins.getData()) {
-                        coinCache.put(coin.getSymbol(), coin);
+                        allCoins.add(coin);
                     }
                     totalNumberOfCoins = coins.getInfo().getCoinsNum();
                 }
@@ -65,7 +72,7 @@ public class QueryServiceImpl implements QueryService{
         stopwatch.stop();
         System.out.println(String.format("[GetAllCoins] Total time elapsed: %sms", stopwatch.getElapsedTimeMs()));
         stopwatch.reset();
-        return coinCache;
+        return allCoins;
     }
 
     private void printResponse(HttpStatus responseStatus, String responseBody) {
